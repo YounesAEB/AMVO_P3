@@ -1,8 +1,9 @@
-function [yP,yC] = computeGeometry(N,b)
+function [yP,yC,deltaY] = computeGeometryUniform(N,b)
 
 
 yP = zeros(N+1,1);
 yC = zeros(N,1);
+deltaY = zeros(N,1);
 d = b/N;
 sum = -b/2;
 
@@ -16,4 +17,6 @@ for i=1:N
         yC(i,1) = yP(i,1) + d/2;
         sum = sum + d;
     end
+    deltaY (i) = d;
 end
+

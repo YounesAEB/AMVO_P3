@@ -5,6 +5,7 @@ theta = 0; % Twist
 
 m = 40; % Mass in kilograms
 
-N = 2;
+N = 10;
 
-[yP, yC] = computeGeometry(N,b);
+%[yP, yC, deltaY] = computeGeometryUniform(N,b);
+[yP, yC, deltaY] = computeGeometryCosine(N,b);

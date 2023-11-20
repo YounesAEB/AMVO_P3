@@ -18,10 +18,15 @@ aoa     = 0;     % Angle of attack
 m       = 40;    % Mass in kilograms
 rho     = 1.225; % Air density
 g0      = 9.81;  % Gravity's acceleration
+W       = m*g0;  % Wing's weight
 Cl0     = 0.24;  % Zero degree lift coefficient
 Clalpha = 6.7;   % Lift coefficient slope with angle of attack
 
-Uinf    = 12.0078837;   % Freestream Velocity field module
+% Desired Freestream velocity process
+delta = 0.00001;
+L     = 0; % Lift initialization
+Uinf    = 10;   % Freestream Velocity field module
+while abs(L-W)>delta
 Qinf    = Uinf*[cosd(aoa);sind(aoa)]; % Freestream Velocity field
 
 % Geometry definition
@@ -32,8 +37,9 @@ N = 10; % Number of span slices
 [coordsP, coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryCosine(N,b,cR,cT,thetaT,aoa);
 
 % Variable definition
-q = zeros(N,1); % Vector of independent terms changed notation from "b" to "q"
-A = zeros(N,N); % Influence matrix
+q    = zeros(N,1); % Vector of independent terms changed notation from "b" to "q"
+A    = zeros(N,N); % Influence matrix
+aoaInd = zeros(N,1);
 
 % System of equations resolution
 for i= 1:N
@@ -44,7 +50,7 @@ for i= 1:N
             A(i,i) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]' + 1;
         else
             v = computeHorseshoe(coordsP,coordsC,i,j);
-            A(i,i) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
         end
     end
 end
@@ -52,17 +58,21 @@ T = A\q;
 
 % Individual slice bidimensional lift coefficient
 Cl12   = 2*T./(c12*norm(Qinf));
-aoaInd = (Cl12 - Cl0)/Clalpha - aoaE;
-
+for i = 1:N
+    aoaInd(i,1) = (Cl12(i) - Cl0)/Clalpha - (aoaE(i+1)+aoaE(i))/2;
+end
 % Total wing lift verification
 L = rho*norm(Qinf)*sum(T.*deltaY);
 
-if L<(m*g0)
-    disp("Not enough freestream velocity");
-    newUinf = (m*g0)/(rho*sum(T.*deltaY));
-elseif L>(m*g0)
-    disp("Too much freestream velocity");
-    newUinf = (m*g0)/(rho*sum(T.*deltaY));
-else
-    disp("Desired freestream velocity");
+if abs(L-W)<delta
+    msg = sprintf('Desired freestream velocity: Uinf=%i with L=W=%i \n', Uinf, L);
+    disp(msg);
+else 
+    msg = sprintf('Inappropiate freestream velocity with L= %i and W=%i \n', L, W);
+    disp(msg);   
+    Uinf = (Uinf+(m*g0)/(rho*sum(T.*deltaY)))/2;  
 end
+end
+
+% Induced Drag calculation 
+Dind = -rho*norm(Qinf)*sum(T.*deltaY.*aoaInd);

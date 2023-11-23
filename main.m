@@ -25,12 +25,12 @@ Clalpha = 6.7;   % Lift coefficient slope with angle of attack
 % Desired Freestream velocity process
 delta = 0.00001;
 L     = 0; % Lift initialization
-Uinf    = 10;   % Freestream Velocity field module
+Uinf    = 33.06;   % Freestream Velocity field module
 while abs(L-W)>delta
 Qinf    = Uinf*[cosd(aoa);sind(aoa)]; % Freestream Velocity field
 
 % Geometry definition
-N = 10; % Number of span slices
+N = 500; % Number of span slices
 
 
 %[coordsP,coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa);
@@ -75,4 +75,10 @@ end
 end
 
 % Induced Drag calculation 
+S = 3.375;
 Dind = -rho*norm(Qinf)*sum(T.*deltaY.*aoaInd);
+
+CDind = Dind/(0.5*rho*norm(Qinf)^2*S);
+
+% Total Lift coefficient calculation
+CL = 2*sum(T.*deltaY/(norm(Qinf)*S));

@@ -6,7 +6,7 @@ deltaY  = zeros(N,1);
 beta    = linspace(0,180,N+1)';
 c12     = zeros(N,1);
 
-% Spanwise coordinates
+% Spanwise coordinates - Cosine Distribution
 for i=1:N
     if i == 1
         coordsP(i,2)     =  -cosd(beta(i))*b/2;
@@ -27,7 +27,7 @@ else
 end
 aoaE  = theta + aoa; % Efective angle of attack
 
-% Chord length of each slice
+% Chord length of each slice -  NOT CORRECT
 c     = [cT:(cR-cT)/(N/2):cR,cR-(cR-cT)/(N/2):-(cR-cT)/(N/2):cT];
 for i = 1:N
     c12(i) = (c(i)+c(i+1))/2;

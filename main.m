@@ -23,18 +23,17 @@ Cl0     = 0.24;  % Zero degree lift coefficient
 Clalpha = 6.7;   % Lift coefficient slope with angle of attack
 
 % Desired Freestream velocity process
-delta = 0.00001;
+delta = 0.00001; % Relaxation factor
 L     = 0; % Lift initialization
-Uinf    = 33.06;   % Freestream Velocity field module
+Uinf    = 10;   % Freestream Velocity field module
 while abs(L-W)>delta
 Qinf    = Uinf*[cosd(aoa);sind(aoa)]; % Freestream Velocity field
 
 % Geometry definition
-N = 500; % Number of span slices
+N = 512; % Number of span slices
 
-
-%[coordsP,coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa);
-[coordsP, coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryCosine(N,b,cR,cT,thetaT,aoa);
+[coordsP,coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa);
+% [coordsP, coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryCosine(N,b,cR,cT,thetaT,aoa);
 
 % Variable definition
 q    = zeros(N,1); % Vector of independent terms changed notation from "b" to "q"

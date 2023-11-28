@@ -30,8 +30,8 @@ while abs(L-W)>delta
 Qinf    = Uinf*[cosd(aoa);sind(aoa)]; % Freestream Velocity field
 
 % Geometry definition
-N = 512;
-2; % Number of span slices
+N = 512; % Number of span slices
+
 
 [coordsP,coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa);
 % [coordsP, coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryCosine(N,b,cR,cT,thetaT,aoa);
@@ -54,7 +54,7 @@ for i= 1:N
         end
     end
 end
-T = A\q;
+    T = A\q;
 
 % Individual slice bidimensional lift coefficient
 Cl12   = 2*T./(c12*norm(Qinf));
@@ -85,3 +85,6 @@ CL = 2*sum(T.*deltaY/(norm(Qinf)*S));
 
 % Parameter
 parameter = CL^2/(pi*(b^2/S)*CDind);
+
+% Prova 
+cuinf = (W/rho)/(sum(T)*deltaY(1));

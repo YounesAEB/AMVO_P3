@@ -4,7 +4,7 @@
 %  /  ESEIAAT_UPC                                           
 %  /  MUEA - MQ1 - Younes Akhazzan - Joel Rajo - Pol Ruiz                         
 %--------------------------------------------------------------------------
-clc; clear; close all;
+% clc; clear; close all;
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultLegendInterpreter','latex');
@@ -18,7 +18,7 @@ cT      = 0.7;   % Tip chord of the main wing
 cRh     = 0.65;  % Root chord of HTP  
 cTh     = 0.45;  % Tip chord of HTP 
 lh      = 3;     % Main wing - HTP separation
-thetaT  = 0;     % Twist at the tip of the main wing
+thetaT  = -3;     % Twist at the tip of the main wing
 thetaTh  = 0;    % Twist at the tip of the HTP
 iw      = 0;     % Main wing incidence angle
 it      =-2;     % HTP incidence angle
@@ -34,14 +34,16 @@ Clalpha = 0.117306319973439; % Lift coefficient slope with aoa
 Cl0     = 0.000308895559508056; % Zero aoa lift coefficient
 
 % Geometry definition
-N       = 10; % Number of span slices main wing
-M       = 10; % Number of span slices HTP
+N       = 512; % Number of span slices main wing
+M       = 256; % Number of span slices HTP
 [MW.coordsP,MW.coordsC,MW.deltaY,MW.c,MW.c12,MW.theta,MW.aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa+iw);
 [HTP.coordsP,HTP.coordsC,HTP.deltaY,HTP.c,HTP.c12,HTP.theta,HTP.aoaE] = computeGeometryUniform(M,bh,cRh,cTh,thetaTh,aoa+it);
 coordsP = [MW.coordsP;HTP.coordsP];
-coordsP(N+1:end,1) = coordsP(N+1:end,1) + lh; % HTP displacement
+coordsP(N+2:end,1) = coordsP(N+2:end,1) + lh; % HTP displacement
+coordsP(N+2:end,3) = coordsP(N+2:end,3) - 0.05; % Zero angle interference correction
 coordsC = [MW.coordsC;HTP.coordsC];
 coordsC(N+1:end,1) = coordsC(N+1:end,1) + lh; % HTP displacement
+coordsC(N+1:end,3) = coordsC(N+1:end,3) - 0.05; % Zero angle interference correction
 deltaY  = [MW.deltaY;HTP.deltaY];
 c       = [MW.c';HTP.c'];
 c12     = [MW.c12;HTP.c12];
@@ -55,7 +57,7 @@ aoaInd  = zeros(N+M,1);
 
 % System of equations resolution
 for i= 1:N
-    q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0+Clalpha*(aoaE(i)));
+    q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0+Clalpha*((aoaE(i)+aoaE(i+1))/2));
     for j = 1:N
         if i==j
             v = computeHorseshoeSelf(coordsP,coordsC,i,j,aoa);
@@ -71,7 +73,7 @@ for i= 1:N
     end
 end
 for i= N+1:N+M
-    q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0+Clalpha*(aoaE(i)));
+    q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0+Clalpha*((aoaE(i+1)+aoaE(i+2))/2));
     for j = 1:N
             v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
             A(i,j) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
@@ -87,6 +89,16 @@ for i= N+1:N+M
     end
 end
 T = A\q;
+
+% Individual slice bidimensional lift coefficient
+Cl12   = 2*T./(c12*norm(Qinf));
+
+% Plot of the lift coefficients per slice
+figure
+hold on
+plot(coordsC(1:N,2),Cl12(1:N,1));
+plot(coordsC(N+1:N+M,2),Cl12(N+1:N+M,1));
+hold off
 
 % % Individual slice bidimensional lift coefficient
 % Cl12   = 2*T./(c12*norm(Qinf));

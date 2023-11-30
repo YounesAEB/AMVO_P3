@@ -32,6 +32,7 @@ Qinf    = Uinf*[cosd(aoa);sind(aoa)]; % Freestream Velocity field
 % Geometry definition
 N = 512; % Number of span slices
 
+
 [coordsP,coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa);
 % [coordsP, coordsC, deltaY,c,c12,theta,aoaE] = computeGeometryCosine(N,b,cR,cT,thetaT,aoa);
 
@@ -45,15 +46,15 @@ for i= 1:N
     q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0+Clalpha*(aoaE(i)));
     for j = 1:N
         if i==j
-            v = computeHorseshoeSelf(coordsP,coordsC,i,j);
+            v = computeHorseshoeSelf(coordsP,coordsC,i,j,aoa);
             A(i,i) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]' + 1;
         else
-            v = computeHorseshoe(coordsP,coordsC,i,j);
+            v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
             A(i,j) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
         end
     end
 end
-T = A\q;
+    T = A\q;
 
 % Individual slice bidimensional lift coefficient
 Cl12   = 2*T./(c12*norm(Qinf));
@@ -81,3 +82,9 @@ CDind = Dind/(0.5*rho*norm(Qinf)^2*S);
 
 % Total Lift coefficient calculation
 CL = 2*sum(T.*deltaY/(norm(Qinf)*S));
+
+% Parameter
+parameter = CL^2/(pi*(b^2/S)*CDind);
+
+% Prova 
+cuinf = (W/rho)/(sum(T)*deltaY(1));

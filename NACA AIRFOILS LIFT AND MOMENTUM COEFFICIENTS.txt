@@ -1,0 +1,13 @@
+SIMPLE WING NACA 0010: 
+	Cl_alfa = 0.117306319973439
+	Cl_0    = 0.000308895559508056
+	Cm_1/4  = 
+COMPOSED WING NACA 0015:
+	delta == 0; alfa = variable;
+	Cl_alfa = 0.115491628925204
+	Cl_0    = 0.000272585908644561
+	Cm_1/4  = 
+	alfa == 0; delta = variable;
+	Cl_delta = 0.0724135854767064
+	Cl_delta0    = 0.00618013970553989
+	Cm_1/4  = 

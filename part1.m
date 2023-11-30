@@ -4,7 +4,7 @@
 %  /  ESEIAAT_UPC                                           
 %  /  MUEA - MQ1 - Younes Akhazzan - Joel Rajo - Pol Ruiz                         
 %--------------------------------------------------------------------------
-% clc; clear; close all;
+clc; clear; close all;
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultLegendInterpreter','latex');
@@ -18,8 +18,8 @@ cT      = 0.7;   % Tip chord of the main wing
 cRh     = 0.65;  % Root chord of HTP  
 cTh     = 0.45;  % Tip chord of HTP 
 lh      = 3;     % Main wing - HTP separation
-thetaT  = -3;     % Twist at the tip of the main wing
-thetaTh  = 0;    % Twist at the tip of the HTP
+thetaT  = 0;     % Twist at the tip of the main wing
+thetaTh = 0;    % Twist at the tip of the HTP
 iw      = 0;     % Main wing incidence angle
 it      =-2;     % HTP incidence angle
 aoa     = 4;     % Angle of attack of the main wing central section
@@ -34,8 +34,8 @@ Clalpha = 0.117306319973439; % Lift coefficient slope with aoa
 Cl0     = 0.000308895559508056; % Zero aoa lift coefficient
 
 % Geometry definition
-N       = 512; % Number of span slices main wing
-M       = 256; % Number of span slices HTP
+N       = 10; % Number of span slices main wing
+M       = 10; % Number of span slices HTP
 [MW.coordsP,MW.coordsC,MW.deltaY,MW.c,MW.c12,MW.theta,MW.aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa+iw);
 [HTP.coordsP,HTP.coordsC,HTP.deltaY,HTP.c,HTP.c12,HTP.theta,HTP.aoaE] = computeGeometryUniform(M,bh,cRh,cTh,thetaTh,aoa+it);
 coordsP = [MW.coordsP;HTP.coordsP];
@@ -100,6 +100,11 @@ plot(coordsC(1:N,2),Cl12(1:N,1));
 plot(coordsC(N+1:N+M,2),Cl12(N+1:N+M,1));
 hold off
 
+% Total Lift coefficient calculation
+Sw = 2*(b/2*(cR+cT)/2);    % Main wing surface
+Sh = 2*(bh/2*(cRh+cTh)/2); % HTP surface
+CL = 2*sum(T.*deltaY/(norm(Qinf)*Sw));
+
 % % Individual slice bidimensional lift coefficient
 % Cl12   = 2*T./(c12*norm(Qinf));
 % for i = 1:N
@@ -115,8 +120,7 @@ hold off
 % 
 % CDind = Dind/(0.5*rho*norm(Qinf)^2*S);
 % 
-% % Total Lift coefficient calculation
-% CL = 2*sum(T.*deltaY/(norm(Qinf)*S));
+
 % 
 % % Parameter
 % parameter = CL^2/(pi*(b^2/S)*CDind);

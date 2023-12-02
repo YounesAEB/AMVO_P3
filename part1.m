@@ -4,7 +4,7 @@
 %  /  ESEIAAT_UPC                                           
 %  /  MUEA - MQ1 - Younes Akhazzan - Joel Rajo - Pol Ruiz                         
 %--------------------------------------------------------------------------
-% clc; clear; close all;
+clc; clear; close all;
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultLegendInterpreter','latex');
@@ -18,7 +18,7 @@ cT      = 0.7;   % Tip chord of the main wing
 cRh     = 0.65;  % Root chord of HTP  
 cTh     = 0.45;  % Tip chord of HTP 
 lh      = 3;     % Main wing - HTP separation
-thetaT  = -2.5;     % Twist at the tip of the main wing
+thetaT  = 0;     % Twist at the tip of the main wing
 thetaTh = 0;    % Twist at the tip of the HTP
 iw      = 0;     % Main wing incidence angle
 it      =-2;     % HTP incidence angle
@@ -30,14 +30,16 @@ Qinf    = Uinf*[cosd(aoa);sind(aoa)]; % Freestream Velocity field
 Cd0     = 0.0075;  % Zero lift drag coefficient
 K       = 0.0055;  % Drag coefficient constant 
 % NACA 0010 Lift Coefficient: Cl = Clalpha*aoaE+Cl0
-Clalpha = 0.117306319973439; % Lift coefficient slope with aoa
-Cl0     = 0.000308895559508056; % Zero aoa lift coefficient
+% Clalpha = 0.117306319973439; % Lift coefficient slope with aoa
+% Cl0     = 0.000308895559508056; % Zero aoa lift coefficient
+Clalpha = 0.1173063; % Lift coefficient slope with aoa
+Cl0     = 0.00030889; % Zero aoa lift coefficient
 % NACA 0010 Momentum Coefficient:
 Cm14    = 0; % Zero pitching moment about the aerodynamic center in symetric airfoils
 
 % Geometry definition
-N       = 512; % Number of span slices main wing
-M       = 256; % Number of span slices HTP
+N       = 10; % Number of span slices main wing
+M       = 10; % Number of span slices HTP
 [MW.coordsP,MW.coordsC,MW.deltaY,MW.c,MW.c12,MW.theta,MW.aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa+iw);
 [HTP.coordsP,HTP.coordsC,HTP.deltaY,HTP.c,HTP.c12,HTP.theta,HTP.aoaE] = computeGeometryUniform(M,bh,cRh,cTh,thetaTh,aoa+it);
 coordsP = [MW.coordsP;HTP.coordsP];

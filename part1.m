@@ -4,7 +4,7 @@
 %  /  ESEIAAT_UPC                                           
 %  /  MUEA - MQ1 - Younes Akhazzan - Joel Rajo - Pol Ruiz                         
 %--------------------------------------------------------------------------
-clc; clear; close all;
+% clc; clear; close all;
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultLegendInterpreter','latex');
@@ -18,7 +18,7 @@ cT      = 0.7;   % Tip chord of the main wing
 cRh     = 0.65;  % Root chord of HTP  
 cTh     = 0.45;  % Tip chord of HTP 
 lh      = 3;     % Main wing - HTP separation
-thetaT  = 0;     % Twist at the tip of the main wing
+thetaT  = -2.5;     % Twist at the tip of the main wing
 thetaTh = 0;    % Twist at the tip of the HTP
 iw      = 0;     % Main wing incidence angle
 it      =-2;     % HTP incidence angle
@@ -32,10 +32,12 @@ K       = 0.0055;  % Drag coefficient constant
 % NACA 0010 Lift Coefficient: Cl = Clalpha*aoaE+Cl0
 Clalpha = 0.117306319973439; % Lift coefficient slope with aoa
 Cl0     = 0.000308895559508056; % Zero aoa lift coefficient
+% NACA 0010 Momentum Coefficient:
+Cm14    = 0; % Zero pitching moment about the aerodynamic center in symetric airfoils
 
 % Geometry definition
-N       = 10; % Number of span slices main wing
-M       = 10; % Number of span slices HTP
+N       = 512; % Number of span slices main wing
+M       = 256; % Number of span slices HTP
 [MW.coordsP,MW.coordsC,MW.deltaY,MW.c,MW.c12,MW.theta,MW.aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa+iw);
 [HTP.coordsP,HTP.coordsC,HTP.deltaY,HTP.c,HTP.c12,HTP.theta,HTP.aoaE] = computeGeometryUniform(M,bh,cRh,cTh,thetaTh,aoa+it);
 coordsP = [MW.coordsP;HTP.coordsP];
@@ -90,37 +92,105 @@ for i= N+1:N+M
 end
 T = A\q;
 
-% Individual slice bidimensional lift coefficient
-Cl12   = 2*T./(c12*norm(Qinf));
-
-% Plot of the lift coefficients per slice
-figure
-hold on
-plot(coordsC(1:N,2),Cl12(1:N,1));
-plot(coordsC(N+1:N+M,2),Cl12(N+1:N+M,1));
-hold off
-
 % Total Lift coefficient calculation
 Sw = 2*(b/2*(cR+cT)/2);    % Main wing surface
 Sh = 2*(bh/2*(cRh+cTh)/2); % HTP surface
 CL = 2*sum(T.*deltaY/(norm(Qinf)*Sw));
+% Total Lift 
+L = rho*norm(Qinf)*sum(T.*deltaY);
+% Individual slice bidimensional lift coefficient
+Cl12   = 2*T./(c12*norm(Qinf));
 
-% % Individual slice bidimensional lift coefficient
-% Cl12   = 2*T./(c12*norm(Qinf));
-% for i = 1:N
-%     aoaInd(i,1) = (Cl12(i) - Cl0)/Clalpha - (aoaE(i+1)+aoaE(i))/2;
-% end
-% 
-% % Total wing lift verification
-% L = rho*norm(Qinf)*sum(T.*deltaY);
-% 
-% % Induced Drag calculation 
-% S = 3.375;
-% Dind = -rho*norm(Qinf)*sum(T.*deltaY.*aoaInd);
-% 
-% CDind = Dind/(0.5*rho*norm(Qinf)^2*S);
-% 
+% Individual slice induced angle of attack
+for i = 1:N
+    aoaInd(i,1) = (Cl12(i) - Cl0)/Clalpha - (aoaE(i+1)+aoaE(i))/2;
+end
+for i = N+1:N+M
+    aoaInd(i,1) = (Cl12(i) - Cl0)/Clalpha - (aoaE(i+2)+aoaE(i+1))/2;
+end
+% Individual slice bidimensional viscous drag coefficient
+Cdv   = Cd0 + K*Cl12.^2;
+% Individual slice bidimensional induced drag coefficient
+Cdind   = -2*T.*aoaInd./(norm(Qinf).*c12);
+% Induced Drag calculation 
+Dind = -rho*norm(Qinf)*sum(T.*deltaY.*aoaInd);
+CDind = Dind/(0.5*rho*norm(Qinf)^2*Sw);
+% Viscous Drag calculation 
+CDv = 1/Sw*sum(Cdv.*c12.*deltaY);
+% Total Drag Coefficient
+CD = CDind + CDv;
 
-% 
-% % Parameter
-% parameter = CL^2/(pi*(b^2/S)*CDind);
+% Pitching moment coefficient 
+lambda = cT/cR; % Tip-to-Root chord ratio
+mac = 2/3*cR*(1+lambda+lambda^2)/(1+lambda); % Mean aerodynamic chord
+CM0 = Cm14 -2*sum(coordsC(:,1).*T.*deltaY)/(norm(Qinf)*Sw*mac);
+M0  = CM0*0.5*rho*norm(Qinf)^2*Sw*mac;
+msg =sprintf("Global CL=%i, CD=%i and CM0=%i",CL,CD,CM0);
+disp(msg);
+
+
+
+% Plot of the lift coefficients per slice
+figure
+hold on
+title("Spanwise distribution of the local coefficients of lift")
+plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cl12(1:N,1);0]);
+plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cl12(N+1:N+M,1);0]);
+xlabel("$2y/b$");
+ylabel("Lift Coefficient $C_{l}$");
+legend("Main Wing","Horizontal Tail Plane","Location","south");
+xlim([-1,1]);
+grid on;
+grid minor;
+box on;
+axis padded
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+hold off;
+% Plot of the viscous drag coefficients per slice
+figure
+hold on
+title("Spanwise distribution of the local coefficients","of viscous drag")
+plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cdv(1:N,1);0]);
+plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cdv(N+1:N+M,1);0]);
+xlabel("$2y/b$");
+ylabel("Viscous Drag Coefficient $C_{d_v}$");
+legend("Main Wing","Horizontal Tail Plane","Location","south");
+xlim([-1,1]);
+grid on;
+grid minor;
+box on;
+axis padded
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+hold off;
+% Plot of the induced drag coefficients per slice
+figure
+hold on
+title("Spanwise distribution of the local coefficients","of induced drag")
+plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cdv(1:N,1);0]);
+plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cdv(N+1:N+M,1);0]);
+xlabel("$2y/b$");
+ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
+legend("Main Wing","Horizontal Tail Plane","Location","south");
+xlim([-1,1]);
+grid on;
+grid minor;
+box on;
+axis padded
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+hold off;
+% Plot of the induced angle of attack per slice
+figure
+hold on
+title("Spanwise distribution of the local","induced angle of attack")
+plot((2/b)*[coordsC(1:N,2)],[aoaInd(1:N,1)]);
+plot((2/bh)*[coordsC(N+1:N+M,2)],[aoaInd(N+1:N+M,1)]);
+xlabel("$2y/b$");
+ylabel("Induced Angle of Attack $\alpha_{ind}$");
+legend("Main Wing","Horizontal Tail Plane","Location","south");
+xlim([-1,1]);
+grid on;
+grid minor;
+box on;
+axis padded
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+hold off;

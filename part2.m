@@ -1,5 +1,5 @@
 %--------------------------------------------------------------------------
-%  /  POTENTIAL AERODYNAMICS - LIFTING LINE METHOD -AMVO 
+%  /  POTENTIAL AERODYNAMICS - LIFTING LINE METHOD - AMVO 
 %  /  Matlab code to assess the numerical solution via LLM - Part 2                                            
 %  /  ESEIAAT_UPC                                           
 %  /  MUEA - MQ1 - Younes Akhazzan - Joel Rajo - Pol Ruiz                         
@@ -10,34 +10,35 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultLegendInterpreter','latex');
 
 % Data given by the excercise statement
-b       = 6;     % Wingspan of the main wing
-bh      = 2.2;   % Wingspan of the horizontal tail plane (HTP)
-ba      = 2;     % Airleron Width of the semi-wing
-cR      = 1.3;   % Root chord of the main wing
-cT      = 0.7;   % Tip chord of the main wing
-cRh     = 0.65;  % Root chord of HTP  
-cTh     = 0.45;  % Tip chord of HTP 
-lh      = 3;     % Main wing - HTP separation
-thetaT  = -2.5;     % Twist at the tip of the main wing
-thetaTh = 0;    % Twist at the tip of the HTP
-iw      = 0;     % Main wing incidence angle
-it      =-2;     % HTP incidence angle
-aoa     = 4;     % Angle of attack of the main wing central section
-delta   = 15;    % Elevator deflection angle
-rho     = 1.225; % Air density
-Uinf    = 1;   % Freestream Velocity field module
-Qinf    = Uinf*[cosd(aoa);sind(aoa)]; % Freestream Velocity field
-% NACA 0015 Lift Coefficient: Cl = Clalpha*aoaE+Cl0+Cld*d
-Clalpha_15 = 0.117306319973439; % Lift coefficient slope with aoa
-Cl0_15     = 0.000308895559508056; % Zero aoa lift coefficient
-Cld        = 0.0724135854767064; % Lift coefficient slope with flap deflection 
-% NACA 0015 Momentum Coefficient:
-Cm0_15    = 0; % Zero pitching moment about the aerodynamic center in symetric airfoils 
-% NACA 0010 Lift Coefficient: Cl = Clalpha*aoaE+Cl0
-Clalpha_10 = 0.117306319973439; % Lift coefficient slope with aoa
-Cl0_10     = 0.000308895559508056; % Zero aoa lift coefficient
-% NACA 0010 Momentum Coefficient:
-Cm0_10   = 0; % Zero pitching moment about the aerodynamic center in symetric airfoils
+b       = 6;          % Wingspan of the main wing
+bh      = 2.2;        % Wingspan of the horizontal tail plane (HTP)
+ba      = 2;          % Airleron Width of the semi-wing
+cR      = 1.3;        % Root chord of the main wing
+cT      = 0.7;        % Tip chord of the main wing
+cRh     = 0.65;       % Root chord of HTP  
+cTh     = 0.45;       % Tip chord of HTP 
+lh      = 3;          % Main wing - HTP separation
+thetaT  = 0*pi/180;   % Twist at the tip of the main wing
+thetaTh = 0*pi/180;   % Twist at the tip of the HTP
+iw      = 0*pi/180;   % Main wing incidence angle
+it      =-2*pi/180;   % HTP incidence angle
+aoa     = 4*pi/180;   % Angle of attack of the main wing central section
+delta   = 15*pi/180;  % Elevator deflection angle
+rho     = 1.225;      % Air density
+Uinf    = 1;          % Freestream Velocity field module
+Qinf    = Uinf*[cos(aoa);sin(aoa)]; % Freestream Velocity field
+
+% NACA 0015 Double Airfoil
+Clalpha_15 = 0.115557049543244*180/pi; % Lift coefficient slope with aoa
+Cl0_15     = 0; % Zero aoa lift coefficient
+Cld        = 0.072865790821013*180/pi; % Lift coefficient slope with flap deflection 
+Cm0_15     = 0; % Zero pitching moment about the aerodynamic center in symetric airfoils
+Cmd        = -0.0116105983744014*180/pi; % Pitching moment coefficient slope with flap deflection 
+
+% NACA 0010 
+Clalpha_10 = 0.117380454907685*180/pi; % Lift coefficient slope with aoa
+Cl0_10     = 0; % Zero aoa lift coefficient
+Cm0_10     = 0; % Zero pitching moment about the aerodynamic center in symetric airfoils
 
 % Geometry definition
 N       = 512; % Number of span slices main wing
@@ -67,30 +68,30 @@ for i= 1:N
     for j = 1:N
         if i==j
             v = computeHorseshoeSelf(coordsP,coordsC,i,j,aoa);
-            A(i,i) = -1/2*Clalpha_10*c12(i)*v*[-sind(aoa),0,cosd(aoa)]' + 1;
+            A(i,i) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]' + 1;
         else
             v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
-            A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
         end
     end
     for j = N+1:N+M
             v = computeHorseshoe(coordsP,coordsC,i,j+1,aoa);
-            A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
     end
 end
 for i= N+1:N+M
     q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0_15+Clalpha_15*((aoaE(i+1)+aoaE(i+2))/2)+Cld*delta);
     for j = 1:N
             v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
-            A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
     end
     for j = N+1:N+M
         if i==j
             v = computeHorseshoeSelf(coordsP,coordsC,i,j+1,aoa);
-            A(i,i) = -1/2*Clalpha_15*c12(i)*v*[-sind(aoa),0,cosd(aoa)]' + 1;
+            A(i,i) = -1/2*Clalpha_15*c12(i)*v*[-sin(aoa),0,cos(aoa)]' + 1;
         else
             v = computeHorseshoe(coordsP,coordsC,i,j+1,aoa);
-            A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
         end
     end
 end
@@ -120,78 +121,14 @@ Dind = -rho*norm(Qinf)*sum(T.*deltaY.*aoaInd);
 CDind = Dind/(0.5*rho*norm(Qinf)^2*Sw);
 
 
-% % Pitching moment coefficient 
-% lambda = cT/cR; % Tip-to-Root chord ratio
-% mac = 2/3*cR*(1+lambda+lambda^2)/(1+lambda); % Mean aerodynamic chord
-% CM0 = Cm14 -2*sum(coordsC(:,1).*T.*deltaY)/(norm(Qinf)*Sw*mac);
-% M0  = CM0*0.5*rho*norm(Qinf)^2*Sw*mac;
-% msg =sprintf("Global CL=%i, CD=%i and CM0=%i",CL,CD,CM0);
-% disp(msg);
-% 
+% Pitching moment coefficient 
+lambda = cT/cR; % Tip-to-Root chord ratio
+mac = 2/3*cR*(1+lambda+lambda^2)/(1+lambda); % Mean aerodynamic chord
+CM0 = (Cmd*delta) -2*sum(coordsC(:,1).*T.*deltaY)/(norm(Qinf)*Sw*mac);
+M0  = CM0*0.5*rho*norm(Qinf)^2*Sw*mac;
+
+msg =sprintf("Global CL=%i and CM0=%i",CL,CM0);
+disp(msg);
 
 
-% Plot of the lift coefficients per slice
-figure
-hold on
-title("Spanwise distribution of the local coefficients of lift")
-plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cl12(1:N,1);0]);
-plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cl12(N+1:N+M,1);0]);
-xlabel("$2y/b$");
-ylabel("Lift Coefficient $C_{l}$");
-legend("Main Wing","Horizontal Tail Plane","Location","south");
-xlim([-1,1]);
-grid on;
-grid minor;
-box on;
-axis padded
-set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
-hold off;
 
-% % Plot of the viscous drag coefficients per slice
-% figure
-% hold on
-% title("Spanwise distribution of the local coefficients","of viscous drag")
-% plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cdv(1:N,1);0]);
-% plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cdv(N+1:N+M,1);0]);
-% xlabel("$2y/b$");
-% ylabel("Viscous Drag Coefficient $C_{d_v}$");
-% legend("Main Wing","Horizontal Tail Plane","Location","south");
-% xlim([-1,1]);
-% grid on;
-% grid minor;
-% box on;
-% axis padded
-% set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
-% hold off;
-% % Plot of the induced drag coefficients per slice
-% figure
-% hold on
-% title("Spanwise distribution of the local coefficients","of induced drag")
-% plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cdv(1:N,1);0]);
-% plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cdv(N+1:N+M,1);0]);
-% xlabel("$2y/b$");
-% ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
-% legend("Main Wing","Horizontal Tail Plane","Location","south");
-% xlim([-1,1]);
-% grid on;
-% grid minor;
-% box on;
-% axis padded
-% set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
-% hold off;
-% % Plot of the induced angle of attack per slice
-% figure
-% hold on
-% title("Spanwise distribution of the local","induced angle of attack")
-% plot((2/b)*[coordsC(1:N,2)],[aoaInd(1:N,1)]);
-% plot((2/bh)*[coordsC(N+1:N+M,2)],[aoaInd(N+1:N+M,1)]);
-% xlabel("$2y/b$");
-% ylabel("Induced Angle of Attack $\alpha_{ind}$");
-% legend("Main Wing","Horizontal Tail Plane","Location","south");
-% xlim([-1,1]);
-% grid on;
-% grid minor;
-% box on;
-% axis padded
-% set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
-% hold off;

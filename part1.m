@@ -1,5 +1,5 @@
 %--------------------------------------------------------------------------
-%  /  POTENTIAL AERODYNAMICS - LIFTING LINE METHOD -AMVO 
+%  /  POTENTIAL AERODYNAMICS - LIFTING LINE METHOD - AMVO 
 %  /  Matlab code to assess the numerical solution via LLM - Part 1                                            
 %  /  ESEIAAT_UPC                                           
 %  /  MUEA - MQ1 - Younes Akhazzan - Joel Rajo - Pol Ruiz                         
@@ -18,35 +18,42 @@ cT      = 0.7;   % Tip chord of the main wing
 cRh     = 0.65;  % Root chord of HTP  
 cTh     = 0.45;  % Tip chord of HTP 
 lh      = 3;     % Main wing - HTP separation
-thetaT  = 0;     % Twist at the tip of the main wing
-thetaTh = 0;    % Twist at the tip of the HTP
-iw      = 0;     % Main wing incidence angle
-it      =-2;     % HTP incidence angle
-aoa     = 4;     % Angle of attack of the main wing central section
+iw      = 0*pi/180;     % Main wing incidence angle
+it      =-2*pi/180;     % HTP incidence angle
+aoa     = 4*pi/180;     % Angle of attack of the main wing central section
 rho     = 1.225; % Air density
 Uinf    = 1;   % Freestream Velocity field module
-Qinf    = Uinf*[cosd(aoa);sind(aoa)]; % Freestream Velocity field
+Qinf    = Uinf*[cos(aoa);sin(aoa)]; % Freestream Velocity field
+
 % Parabolic drag: Cd = Cd0 + K*Cl^2
 Cd0     = 0.0075;  % Zero lift drag coefficient
 K       = 0.0055;  % Drag coefficient constant 
-% NACA 0010 Lift Coefficient: Cl = Clalpha*aoaE+Cl0
-% Clalpha = 0.117306319973439; % Lift coefficient slope with aoa
-% Cl0     = 0.000308895559508056; % Zero aoa lift coefficient
-Clalpha = 0.1173063; % Lift coefficient slope with aoa
-Cl0     = 0.00030889; % Zero aoa lift coefficient
-% NACA 0010 Momentum Coefficient:
-Cm14    = 0; % Zero pitching moment about the aerodynamic center in symetric airfoils
+
+% NACA 0010 
+Clalpha = 0.117380454907685*180/pi; % Lift coefficient slope with aoa
+Cl0     = 0; % Zero aoa lift coefficient
+Cmca     = 0; % Zero pitching moment about the aerodynamic center in symetric airfoils
 
 % Geometry definition
-N       = 10; % Number of span slices main wing
-M       = 10; % Number of span slices HTP
+N       = 512; % Number of span slices main wing
+M       = 256; % Number of span slices HTP
+
+% Ideal twist for max CL/CD
+thetaTh = 0*pi/180;    
+% thetaTaux  = -4*pi/180:0.5*pi/180:4*pi/180;     % Twist at the tip of the main wing
+thetaTaux  = 0*pi/180; % Twist at the tip of the HTP
+
+Efficiency = zeros(1,size(thetaTaux,2));
+for a = 1:size(thetaTaux,2)
+thetaT = thetaTaux(1,a);
+
 [MW.coordsP,MW.coordsC,MW.deltaY,MW.c,MW.c12,MW.theta,MW.aoaE] = computeGeometryUniform(N,b,cR,cT,thetaT,aoa+iw);
 [HTP.coordsP,HTP.coordsC,HTP.deltaY,HTP.c,HTP.c12,HTP.theta,HTP.aoaE] = computeGeometryUniform(M,bh,cRh,cTh,thetaTh,aoa+it);
 coordsP = [MW.coordsP;HTP.coordsP];
-coordsP(N+2:end,1) = coordsP(N+2:end,1) + lh; % HTP displacement
+coordsP(N+2:end,1) = coordsP(N+2:end,1) + lh;   % HTP displacement
 coordsP(N+2:end,3) = coordsP(N+2:end,3) - 0.05; % Zero angle interference correction
 coordsC = [MW.coordsC;HTP.coordsC];
-coordsC(N+1:end,1) = coordsC(N+1:end,1) + lh; % HTP displacement
+coordsC(N+1:end,1) = coordsC(N+1:end,1) + lh;   % HTP displacement
 coordsC(N+1:end,3) = coordsC(N+1:end,3) - 0.05; % Zero angle interference correction
 deltaY  = [MW.deltaY;HTP.deltaY];
 c       = [MW.c';HTP.c'];
@@ -55,7 +62,7 @@ theta   = [MW.theta';HTP.theta'];
 aoaE    = [MW.aoaE';HTP.aoaE'];
 
 % Variable definition
-q       = zeros(N+M,1); % Vector of independent terms changed notation from "b" to "q"
+q       = zeros(N+M,1);   % Vector of independent terms changed notation from "b" to "q"
 A       = zeros(N+M,N+M); % Influence matrix
 aoaInd  = zeros(N+M,1);
 
@@ -65,36 +72,36 @@ for i= 1:N
     for j = 1:N
         if i==j
             v = computeHorseshoeSelf(coordsP,coordsC,i,j,aoa);
-            A(i,i) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]' + 1;
+            A(i,i) = -1/2*Clalpha*c12(i)*v*[-sin(aoa),0,cos(aoa)]' + 1;
         else
             v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
-            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
         end
     end
     for j = N+1:N+M
             v = computeHorseshoe(coordsP,coordsC,i,j+1,aoa);
-            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
     end
 end
 for i= N+1:N+M
     q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0+Clalpha*((aoaE(i+1)+aoaE(i+2))/2));
     for j = 1:N
             v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
-            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
     end
     for j = N+1:N+M
         if i==j
             v = computeHorseshoeSelf(coordsP,coordsC,i,j+1,aoa);
-            A(i,i) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]' + 1;
+            A(i,i) = -1/2*Clalpha*c12(i)*v*[-sin(aoa),0,cos(aoa)]' + 1;
         else
             v = computeHorseshoe(coordsP,coordsC,i,j+1,aoa);
-            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sind(aoa),0,cosd(aoa)]'; 
+            A(i,j) = -1/2*Clalpha*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
         end
     end
 end
 T = A\q;
 
-% Total Lift coefficient calculation
+% Total Lift coefficient 
 Sw = 2*(b/2*(cR+cT)/2);    % Main wing surface
 Sh = 2*(bh/2*(cRh+cTh)/2); % HTP surface
 CL = 2*sum(T.*deltaY/(norm(Qinf)*Sw));
@@ -102,7 +109,6 @@ CL = 2*sum(T.*deltaY/(norm(Qinf)*Sw));
 L = rho*norm(Qinf)*sum(T.*deltaY);
 % Individual slice bidimensional lift coefficient
 Cl12   = 2*T./(c12*norm(Qinf));
-
 % Individual slice induced angle of attack
 for i = 1:N
     aoaInd(i,1) = (Cl12(i) - Cl0)/Clalpha - (aoaE(i+1)+aoaE(i))/2;
@@ -125,13 +131,18 @@ CD = CDind + CDv;
 % Pitching moment coefficient 
 lambda = cT/cR; % Tip-to-Root chord ratio
 mac = 2/3*cR*(1+lambda+lambda^2)/(1+lambda); % Mean aerodynamic chord
-CM0 = Cm14 -2*sum(coordsC(:,1).*T.*deltaY)/(norm(Qinf)*Sw*mac);
+CM0 = Cmca -2*sum(coordsC(:,1).*T.*deltaY)/(norm(Qinf)*Sw*mac);
 M0  = CM0*0.5*rho*norm(Qinf)^2*Sw*mac;
-msg =sprintf("Global CL=%i, CD=%i and CM0=%i",CL,CD,CM0);
+
+msg =sprintf("Global CL=%i, CD=%i and CM0=%i for a twist angle of %iº",CL,CD,CM0,thetaT);
 disp(msg);
 
+Efficiency(1,a) = CL/CD;
+end
 
 
+%% GRAPHS
+%%{
 % Plot of the lift coefficients per slice
 figure
 hold on
@@ -140,7 +151,7 @@ plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cl12(1:N,1);0]);
 plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cl12(N+1:N+M,1);0]);
 xlabel("$2y/b$");
 ylabel("Lift Coefficient $C_{l}$");
-legend("Main Wing","Horizontal Tail Plane","Location","south");
+legend("Main Wing","Horizontal Tail Plane","Location","best");
 xlim([-1,1]);
 grid on;
 grid minor;
@@ -168,11 +179,11 @@ hold off;
 figure
 hold on
 title("Spanwise distribution of the local coefficients","of induced drag")
-plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cdv(1:N,1);0]);
-plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cdv(N+1:N+M,1);0]);
+plot((2/b)*[coordsC(1:N,2)],[Cdind(1:N,1)]);
+plot((2/bh)*[coordsC(N+1:N+M,2)],[Cdind(N+1:N+M,1)]);
 xlabel("$2y/b$");
 ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
-legend("Main Wing","Horizontal Tail Plane","Location","south");
+legend("Main Wing","Horizontal Tail Plane","Location","north");
 xlim([-1,1]);
 grid on;
 grid minor;
@@ -188,11 +199,12 @@ plot((2/b)*[coordsC(1:N,2)],[aoaInd(1:N,1)]);
 plot((2/bh)*[coordsC(N+1:N+M,2)],[aoaInd(N+1:N+M,1)]);
 xlabel("$2y/b$");
 ylabel("Induced Angle of Attack $\alpha_{ind}$");
-legend("Main Wing","Horizontal Tail Plane","Location","south");
+legend("Main Wing","Horizontal Tail Plane","Location","best");
 xlim([-1,1]);
 grid on;
 grid minor;
 box on;
 axis padded
 set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
-hold off;
+hold off; 
+%}

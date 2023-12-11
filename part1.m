@@ -144,7 +144,7 @@ end
 
 
 %% GRAPHS
-%%{
+%{
 % Plot of the lift coefficients per slice
 figure
 hold on
@@ -161,6 +161,14 @@ box on;
 axis padded
 set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
 hold off;
+
+% CODE TO PRINT THE FIGURES IN PDF FORMAT
+    set(gcf, 'Units', 'Centimeters');
+    pos = get(gcf, 'Position');
+    set(gcf, 'PaperPositionMode', 'Auto', 'PaperUnits', 'Centimeters', ...
+        'PaperSize',[pos(3), pos(4)]);
+    print(gcf, 'CL_1', '-dpdf', '-r0'); % incrementar '-r0' resolución 
+
 % Plot of the viscous drag coefficients per slice
 provaX1 = [-20,-19];
 provaY1 = [-20,-19];
@@ -181,29 +189,38 @@ plot(provaX1,provaY1,'k--');
 ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
 xlabel("$2y/b$");
 xlim([-1.1 1.1]);
-legend("","","","","Main Wing","Horizontal Tail Plane","Location","south");
+legend("","","","","Main Wing","Horizontal Tail Plane","Location","best");
 grid on;
 grid minor;
 box on;
 % axis padded
 set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
 hold off;
-% Plot of the induced drag coefficients per slice
-figure
-hold on
-title("Spanwise distribution of the local coefficients","of induced drag")
-plot((2/b)*[coordsC(1:N,2)],[Cdind(1:N,1)],'k');
-plot((2/bh)*[coordsC(N+1:N+M,2)],[Cdind(N+1:N+M,1)],'k--');
-xlabel("$2y/b$");
-ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
-legend("Main Wing","Horizontal Tail Plane","Location","north");
-xlim([-1,1]);
-grid on;
-grid minor;
-box on;
-axis padded
-set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
-hold off;
+
+% CODE TO PRINT THE FIGURES IN PDF FORMAT
+    set(gcf, 'Units', 'Centimeters');
+    pos = get(gcf, 'Position');
+    set(gcf, 'PaperPositionMode', 'Auto', 'PaperUnits', 'Centimeters', ...
+        'PaperSize',[pos(3), pos(4)]);
+    print(gcf, 'CDvCDi_1', '-dpdf', '-r0'); % incrementar '-r0' resolución 
+
+% % Plot of the induced drag coefficients per slice
+% figure
+% hold on
+% title("Spanwise distribution of the local coefficients","of induced drag")
+% plot((2/b)*[coordsC(1:N,2)],[Cdind(1:N,1)],'k');
+% plot((2/bh)*[coordsC(N+1:N+M,2)],[Cdind(N+1:N+M,1)],'k--');
+% xlabel("$2y/b$");
+% ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
+% legend("Main Wing","Horizontal Tail Plane","Location","north");
+% xlim([-1,1]);
+% grid on;
+% grid minor;
+% box on;
+% axis padded
+% set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+% hold off;
+
 % Plot of the total drag coefficients per slice
 figure
 hold on
@@ -212,7 +229,7 @@ plot((2/b)*[coordsC(1:N,2)],Cdv(1:N,1)+Cdind(1:N,1),'k');
 plot((2/bh)*[coordsC(N+1:N+M,2)],Cdv(N+1:N+M,1)+Cdind(N+1:N+M,1),'k--');
 xlabel("$2y/b$");
 ylabel("Total Drag Coefficient $C_{d}$");
-legend("Main Wing","Horizontal Tail Plane","Location","north");
+legend("Main Wing","Horizontal Tail Plane","Location","best");
 xlim([-1,1]);
 grid on;
 grid minor;
@@ -220,6 +237,14 @@ box on;
 axis padded
 set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
 hold off;
+
+% CODE TO PRINT THE FIGURES IN PDF FORMAT
+    set(gcf, 'Units', 'Centimeters');
+    pos = get(gcf, 'Position');
+    set(gcf, 'PaperPositionMode', 'Auto', 'PaperUnits', 'Centimeters', ...
+        'PaperSize',[pos(3), pos(4)]);
+    print(gcf, 'CD_1', '-dpdf', '-r0'); % incrementar '-r0' resolución 
+
 % Plot of the induced angle of attack per slice
 figure
 hold on
@@ -236,4 +261,12 @@ box on;
 axis padded
 set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
 hold off; 
+
+% CODE TO PRINT THE FIGURES IN PDF FORMAT
+    set(gcf, 'Units', 'Centimeters');
+    pos = get(gcf, 'Position');
+    set(gcf, 'PaperPositionMode', 'Auto', 'PaperUnits', 'Centimeters', ...
+        'PaperSize',[pos(3), pos(4)]);
+    print(gcf, 'AoA_ind_1', '-dpdf', '-r0'); % incrementar '-r0' resolución 
+
 %}

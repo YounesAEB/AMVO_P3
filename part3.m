@@ -78,7 +78,7 @@ for i= 1:N
         end
         for j = N+1:N+M
                 v = computeHorseshoe(coordsP,coordsC,i,j+1,aoa);
-                A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
+                A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
         end
     elseif (coordsC(i,2)>=(b/2)-ba)
         q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0_15+Clalpha_15*((aoaE(i)+aoaE(i+1))/2)+Cld*delta_r);
@@ -93,7 +93,7 @@ for i= 1:N
         end
         for j = N+1:N+M
                 v = computeHorseshoe(coordsP,coordsC,i,j+1,aoa);
-                A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
+                A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
         end
     else
         q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0_10+Clalpha_10*((aoaE(i)+aoaE(i+1))/2));
@@ -115,13 +115,8 @@ end
 for i= N+1:N+M
     q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0_10+Clalpha_10*((aoaE(i+1)+aoaE(i+2))/2));
     for j = 1:N
-        if abs(coordsC(i,2))>=((b/2)-ba) 
             v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
-            A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sin(aoa),0,cos(aoa)]';
-        else
-            v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
-            A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]';
-        end
+            A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]';       
     end
     for j = N+1:N+M
         if i==j

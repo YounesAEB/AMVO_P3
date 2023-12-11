@@ -47,10 +47,12 @@ M       = 256; % Number of span slices HTP
 [HTP.coordsP,HTP.coordsC,HTP.deltaY,HTP.c,HTP.c12,HTP.theta,HTP.aoaE] = computeGeometryUniform(M,bh,cRh,cTh,thetaTh,aoa+it);
 coordsP = [MW.coordsP;HTP.coordsP];
 coordsP(N+2:end,1) = coordsP(N+2:end,1) + lh; % HTP displacement
-coordsP(N+2:end,3) = coordsP(N+2:end,3) - 0.05; % Zero angle interference correction
+%coordsP(N+2:end,3) = coordsP(N+2:end,3) - 0.05; % Zero angle interference
+%correction for AoA=0º
 coordsC = [MW.coordsC;HTP.coordsC];
 coordsC(N+1:end,1) = coordsC(N+1:end,1) + lh; % HTP displacement
-coordsC(N+1:end,3) = coordsC(N+1:end,3) - 0.05; % Zero angle interference correction
+%coordsC(N+1:end,3) = coordsC(N+1:end,3) - 0.05; % Zero angle interference
+%correction for AoA=0º
 deltaY  = [MW.deltaY;HTP.deltaY];
 c       = [MW.c';HTP.c'];
 c12     = [MW.c12;HTP.c12];
@@ -76,14 +78,14 @@ for i= 1:N
     end
     for j = N+1:N+M
             v = computeHorseshoe(coordsP,coordsC,i,j+1,aoa);
-            A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
+            A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
     end
 end
 for i= N+1:N+M
     q(i,1) = 1/2*c12(i)*norm(Qinf)*(Cl0_15+Clalpha_15*((aoaE(i+1)+aoaE(i+2))/2)+Cld*delta);
     for j = 1:N
             v = computeHorseshoe(coordsP,coordsC,i,j,aoa);
-            A(i,j) = -1/2*Clalpha_10*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
+            A(i,j) = -1/2*Clalpha_15*c12(i)*v*[-sin(aoa),0,cos(aoa)]'; 
     end
     for j = N+1:N+M
         if i==j

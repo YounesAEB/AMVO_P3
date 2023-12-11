@@ -39,9 +39,9 @@ N       = 512; % Number of span slices main wing
 M       = 256; % Number of span slices HTP
 
 % Ideal twist for max CL/CD
-thetaTh = 0*pi/180;    
-% thetaTaux  = -4*pi/180:0.5*pi/180:4*pi/180;     % Twist at the tip of the main wing
-thetaTaux  = 0*pi/180; % Twist at the tip of the HTP
+thetaTh = 0*pi/180;    % Twist at the tip of the HTP  
+% thetaTaux  = -4*pi/180:0.5*pi/180:4*pi/180;     
+thetaTaux  = 0*pi/180; % Twist at the tip of the main wing
 
 Efficiency = zeros(1,size(thetaTaux,2));
 for a = 1:size(thetaTaux,2)
@@ -51,10 +51,10 @@ thetaT = thetaTaux(1,a);
 [HTP.coordsP,HTP.coordsC,HTP.deltaY,HTP.c,HTP.c12,HTP.theta,HTP.aoaE] = computeGeometryUniform(M,bh,cRh,cTh,thetaTh,aoa+it);
 coordsP = [MW.coordsP;HTP.coordsP];
 coordsP(N+2:end,1) = coordsP(N+2:end,1) + lh;   % HTP displacement
-coordsP(N+2:end,3) = coordsP(N+2:end,3) - 0.05; % Zero angle interference correction
+coordsP(N+2:end,3) = coordsP(N+2:end,3) - 0.0; % Zero angle interference correction
 coordsC = [MW.coordsC;HTP.coordsC];
 coordsC(N+1:end,1) = coordsC(N+1:end,1) + lh;   % HTP displacement
-coordsC(N+1:end,3) = coordsC(N+1:end,3) - 0.05; % Zero angle interference correction
+coordsC(N+1:end,3) = coordsC(N+1:end,3) - 0.0; % Zero angle interference correction
 deltaY  = [MW.deltaY;HTP.deltaY];
 c       = [MW.c';HTP.c'];
 c12     = [MW.c12;HTP.c12];
@@ -147,8 +147,8 @@ end
 figure
 hold on
 title("Spanwise distribution of the local coefficients of lift")
-plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cl12(1:N,1);0]);
-plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cl12(N+1:N+M,1);0]);
+plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cl12(1:N,1);0],'k');
+plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cl12(N+1:N+M,1);0],'k--');
 xlabel("$2y/b$");
 ylabel("Lift Coefficient $C_{l}$");
 legend("Main Wing","Horizontal Tail Plane","Location","best");
@@ -160,14 +160,41 @@ axis padded
 set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
 hold off;
 % Plot of the viscous drag coefficients per slice
+provaX1 = [-20,-19];
+provaY1 = [-20,-19];
+provaX2 = [-20,-19];
+provaY2 = [-20,-19];
 figure
 hold on
-title("Spanwise distribution of the local coefficients","of viscous drag")
+title("Spanwise distribution of the local coefficients","of viscous and induced drag")
+yyaxis left
 plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cdv(1:N,1);0]);
 plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cdv(N+1:N+M,1);0]);
-xlabel("$2y/b$");
 ylabel("Viscous Drag Coefficient $C_{d_v}$");
-legend("Main Wing","Horizontal Tail Plane","Location","south");
+yyaxis right
+plot((2/b)*[coordsC(1:N,2)],[Cdind(1:N,1)]);
+plot((2/bh)*[coordsC(N+1:N+M,2)],[Cdind(N+1:N+M,1)]);
+plot(provaX1,provaY1,'k-');
+plot(provaX1,provaY1,'k--');
+ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
+xlabel("$2y/b$");
+xlim([-1.1 1.1]);
+legend("","","","","Main Wing","Horizontal Tail Plane","Location","south");
+grid on;
+grid minor;
+box on;
+% axis padded
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+hold off;
+% Plot of the induced drag coefficients per slice
+figure
+hold on
+title("Spanwise distribution of the local coefficients","of induced drag")
+plot((2/b)*[coordsC(1:N,2)],[Cdind(1:N,1)],'k');
+plot((2/bh)*[coordsC(N+1:N+M,2)],[Cdind(N+1:N+M,1)],'k--');
+xlabel("$2y/b$");
+ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
+legend("Main Wing","Horizontal Tail Plane","Location","north");
 xlim([-1,1]);
 grid on;
 grid minor;
@@ -175,14 +202,14 @@ box on;
 axis padded
 set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
 hold off;
-% Plot of the induced drag coefficients per slice
+% Plot of the total drag coefficients per slice
 figure
 hold on
-title("Spanwise distribution of the local coefficients","of induced drag")
-plot((2/b)*[coordsC(1:N,2)],[Cdind(1:N,1)]);
-plot((2/bh)*[coordsC(N+1:N+M,2)],[Cdind(N+1:N+M,1)]);
+title("Spanwise distribution of the local coefficients","of total drag")
+plot((2/b)*[coordsC(1:N,2)],Cdv(1:N,1)+Cdind(1:N,1),'k');
+plot((2/bh)*[coordsC(N+1:N+M,2)],Cdv(N+1:N+M,1)+Cdind(N+1:N+M,1),'k--');
 xlabel("$2y/b$");
-ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
+ylabel("Total Drag Coefficient $C_{d}$");
 legend("Main Wing","Horizontal Tail Plane","Location","north");
 xlim([-1,1]);
 grid on;
@@ -195,8 +222,8 @@ hold off;
 figure
 hold on
 title("Spanwise distribution of the local","induced angle of attack")
-plot((2/b)*[coordsC(1:N,2)],[aoaInd(1:N,1)]);
-plot((2/bh)*[coordsC(N+1:N+M,2)],[aoaInd(N+1:N+M,1)]);
+plot((2/b)*[coordsC(1:N,2)],[aoaInd(1:N,1)],'k');
+plot((2/bh)*[coordsC(N+1:N+M,2)],[aoaInd(N+1:N+M,1)],'k--');
 xlabel("$2y/b$");
 ylabel("Induced Angle of Attack $\alpha_{ind}$");
 legend("Main Wing","Horizontal Tail Plane","Location","best");

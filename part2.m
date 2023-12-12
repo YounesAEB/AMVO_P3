@@ -23,7 +23,7 @@ thetaTh = 0*pi/180;   % Twist at the tip of the HTP
 iw      = 0*pi/180;   % Main wing incidence angle
 it      =-2*pi/180;   % HTP incidence angle
 aoa     = 4*pi/180;   % Angle of attack of the main wing central section
-delta   = 15*pi/180;  % Elevator deflection angle
+delta   = -15*pi/180;  % Elevator deflection angle
 rho     = 1.225;      % Air density
 Uinf    = 1;          % Freestream Velocity field module
 Qinf    = Uinf*[cos(aoa);sin(aoa)]; % Freestream Velocity field
@@ -132,5 +132,77 @@ M0  = CM0*0.5*rho*norm(Qinf)^2*Sw*mac;
 msg =sprintf("Global CL=%i and CM0=%i",CL,CM0);
 disp(msg);
 
+%% GRAPHS
+%%{
+% Plot of the lift coefficients per slice
+figure
+hold on
+title("Spanwise distribution of the local coefficients of lift")
+plot((2/b)*[-b/2;coordsC(1:N,2);b/2],[0;Cl12(1:N,1);0],'k');
+plot((2/bh)*[-bh/2;coordsC(N+1:N+M,2);bh/2],[0;Cl12(N+1:N+M,1);0],'k--');
+xlabel("$2y/b$");
+ylabel("Lift Coefficient $C_{l}$");
+legend("Main Wing","Horizontal Tail Plane","Location","best");
+xlim([-1,1]);
+grid on;
+grid minor;
+box on;
+axis padded
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+hold off;
 
+% CODE TO PRINT THE FIGURES IN PDF FORMAT
+    set(gcf, 'Units', 'Centimeters');
+    pos = get(gcf, 'Position');
+    set(gcf, 'PaperPositionMode', 'Auto', 'PaperUnits', 'Centimeters', ...
+        'PaperSize',[pos(3), pos(4)]);
+    print(gcf, 'CL_22', '-dpdf', '-r0'); % incrementar '-r0' resolución 
 
+% Plot of the induced drag coefficients per slice
+figure
+hold on
+title("Spanwise distribution of the local coefficients","of induced drag")
+plot((2/b)*[coordsC(1:N,2)],[Cdind(1:N,1)],'k');
+plot((2/bh)*[coordsC(N+1:N+M,2)],[Cdind(N+1:N+M,1)],'k--');
+xlabel("$2y/b$");
+ylabel("Induced Drag Coefficient $C_{d_{ind}}$");
+legend("Main Wing","Horizontal Tail Plane","Location","north");
+xlim([-1,1]);
+grid on;
+grid minor;
+box on;
+axis padded
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+hold off;
+
+% CODE TO PRINT THE FIGURES IN PDF FORMAT
+    set(gcf, 'Units', 'Centimeters');
+    pos = get(gcf, 'Position');
+    set(gcf, 'PaperPositionMode', 'Auto', 'PaperUnits', 'Centimeters', ...
+        'PaperSize',[pos(3), pos(4)]);
+    print(gcf, 'Cdi_22', '-dpdf', '-r0'); % incrementar '-r0' resolución 
+
+% Plot of the induced angle of attack per slice
+figure
+hold on
+title("Spanwise distribution of the local","induced angle of attack")
+plot((2/b)*[coordsC(1:N,2)],[aoaInd(1:N,1)],'k');
+plot((2/bh)*[coordsC(N+1:N+M,2)],[aoaInd(N+1:N+M,1)],'k--');
+xlabel("$2y/b$");
+ylabel("Induced Angle of Attack $\alpha_{ind}$");
+legend("Main Wing","Horizontal Tail Plane","Location","north");
+xlim([-1,1]);
+grid on;
+grid minor;
+box on;
+axis padded
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize',13);
+hold off; 
+
+% CODE TO PRINT THE FIGURES IN PDF FORMAT
+    set(gcf, 'Units', 'Centimeters');
+    pos = get(gcf, 'Position');
+    set(gcf, 'PaperPositionMode', 'Auto', 'PaperUnits', 'Centimeters', ...
+        'PaperSize',[pos(3), pos(4)]);
+    print(gcf, 'AoAind_22', '-dpdf', '-r0'); % incrementar '-r0' resolución 
+%}
